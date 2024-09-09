@@ -31,7 +31,7 @@ router.get('/',async(req,res)=>{
         res.status(502).json({err:"Internal server error "});
     }
 })
-
+//parametrised router
 router.get('/:taste',async(req,res)=>{
     const taste= req.params.taste;
     try{
@@ -50,5 +50,5 @@ router.get('/:taste',async(req,res)=>{
         res.status(502).json({err:"Internal server error "});
     }
 })
-
+//hey here for just fun
 module.exports=menuroutes;
