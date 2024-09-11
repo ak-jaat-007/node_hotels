@@ -4,6 +4,7 @@ const db=require('./db');
 const bodyParser=require('body-parser');
 app.use(bodyParser.json());
 const passport=require('./auth');
+const {jwtMiddleware,generatetoken}=require('./jwt.js');
 
 require('dotenv').config();
 

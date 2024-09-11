@@ -1,15 +1,23 @@
 const express=require('express');
 const router=express.Router();
 const Person=require('./../models/person.js');
+const {jwtMiddleware,generatetoken}=require('./../jwt.js');
 
-router.post('/',async(req,res)=>{
+router.post('/signup',async(req,res)=>{
     
     try{
         const data=req.body;
         const newPerson=Person(data);
         const response= await newPerson.save();
         console.log("successfull ");
-        res.status(200).json({response})
+        const payload={
+            id:response.id,
+            username:response.username
+        }
+        console.log("your payload is :"+JSON.stringify(payload));
+        const token=generatetoken(payload);
+        console.log("your generated token is: "+token);
+        res.status(200).json({response:response,token:token});
     }
     catch(err){
         console.log(err);
@@ -18,7 +26,43 @@ router.post('/',async(req,res)=>{
     
 });
 
-router.get('/',async(req,res)=>{
+
+router.post('/login',async(req,res)=>{
+    try{
+        const {username,password}=req.body;
+        const user=await Person.findOne({username:username});
+        const pass= await user.comparePassword(password,user.password);
+        if(!user){
+           return  res.status(400).json({err:"Either your username or password is incorrect"});
+        }
+       const payload={
+           id:user.id,
+           username:user.username
+       }
+       const token= generatetoken(payload);
+       res.status(200).json({token});
+
+    }
+    catch(err){
+        console.log("error is: "+err);
+        res.status(404).json({err:"Your are not a valid user"});
+    }
+})
+
+router.get('/profile',jwtMiddleware,async(req,res)=>{
+    try{
+        const userdata=req.user;
+        console.log("User data is :" +userdata);
+        const userid=userdata.id;
+        const user=await Person.findById(userid);
+        res.status(200).json({user});
+    }
+    catch(err){
+        console.log(err+" user not found");
+        res.status(400).json({err:" user not found"})
+    }
+})
+router.get('/',jwtMiddleware,async(req,res)=>{
     try{
        const data=await Person.find();
        console.log("data fetched");
